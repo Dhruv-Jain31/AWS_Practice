@@ -1,0 +1,35 @@
+# CloudFormation template to launch an EC2 instance with SSH access
+
+Parameters:
+  KeyName:
+    Description: The EC2 key pair                # Name of the existing EC2 KeyPair for SSH access
+    Type: AWS::EC2::KeyPair::KeyName
+  Ec2Name:
+    Type: String                                 # Name tag for the EC2 instance
+
+Resources:
+  Ec2Instance:
+    Type: AWS::EC2::Instance                     # Defines an EC2 instance resource
+    Properties:
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup             # Attach the security group defined below
+      ImageId: ami-041feb57c611358bd             # AMI ID for the EC2 instance (update as needed)
+      KeyName: !Ref KeyName                      # Reference to the KeyName parameter
+      Tags:
+        - Key: Name
+          Value: !Ref Ec2Name                    # Assign Name tag from parameter
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup                # Defines a security group resource
+    Properties:
+      GroupDescription: Enable SSH access via port 22   # Description of the security group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0                     # Allow SSH from anywhere (not recommended for production)
+
+Outputs:
+  PublicIp:
+    Description: Server Public IP                # Output the public IP of the EC2 instance
+    Value: !GetAtt Ec2Instance.PublicIp
